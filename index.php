@@ -398,13 +398,14 @@
                 <table id="tabla" class="display responsive nowrap" style="width:100%">
                     <thead>
                         <tr>
-                            <th>Fecha</th>
+                            <th>Fecha Registro</th>
                             <th>Nombre</th>
                             <th>Servicio</th>
                             <th>Warehouse</th>
                             <th>Tracking</th>
                             <th>Peso</th>
                             <th>Estatus</th>
+                            <th>Fecha Entrega</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -506,8 +507,8 @@
                     }
 
                     data.forEach(function(row) {
-                        let estatus = String(row.estatus || "").toUpperCase();
-                        let esPagado = estatus === "PAGADO";
+                        let estadoEntrega = String(row.estatus || "").toUpperCase();
+                        let entregado = estadoEntrega == "ENTREGADO";
 
                         let fecha = escapeHtml(row.fecha_registro || "");
                         let nombre = escapeHtml(row.nombre || "");
@@ -516,8 +517,12 @@
                         let tracking = escapeHtml(row.tracking || "");
                         let peso = escapeHtml(row.peso || "0");
 
-                        let textoEstatus = esPagado ? "ENTREGADO" : "EN BODEGA";
-                        let claseEstatus = esPagado ? "status-pagado" : "status-bodega";
+                        let claseEstatus = entregado ? "status-pagado" : "status-bodega";
+                        let textoEstatus = entregado ? "Entregado" : "En Bodega";
+
+                        let fechaEntrega = entregado 
+                        ? `<span style="color:#155724; font-weight:bold;">${escapeHtml(row.fecha_entrega || "")}</span>`
+                        : `<span style="color:#999;">N/A</span>`;
 
                         tabla.row.add([
                             `<b>${fecha}</b>`,
@@ -526,7 +531,9 @@
                             warehouse,
                             `<span style="color:var(--accent); font-weight:bold;">${tracking}</span>`,
                             `${peso} lbs`,
-                            `<span class="status-badge ${claseEstatus}">${textoEstatus}</span>`
+                            `<span class="status-badge ${claseEstatus}">${textoEstatus}</span>`,
+                            fechaEntrega
+
                         ]);
                     });
 
