@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consulta de Paquetes | YaYa Envios</title>
+    <title>YaYa Envios Paquetes</title>
+    <link rel="icon" type="image/x-icon" sizes="512x512" href="favicon.ico?v=2">
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
@@ -434,19 +435,16 @@
                 searching: false,
                 info: false,
                 autoWidth: false,
-                responsive: true,
-                columnDefs: [{
-                        responsivePriority: 1,
-                        targets: 0
-                    }, // Fecha
-                    {
-                        responsivePriority: 2,
-                        targets: 4
-                    }, // Tracking
-                    {
-                        responsivePriority: 3,
-                        targets: 6
-                    } // Estatus
+                responsive: {
+                    details: {
+                        display: $.fn.dataTable.Responsive.display.childRowImmediate,
+                        type: 'inline'
+                    }
+                },
+                columnDefs: [
+                    { responsivePriority: 1, targets: 0 },
+                    { responsivePriority: 2, targets: 4 },
+                    { responsivePriority: 3, targets: 6 }
                 ],
                 language: {
                     url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
@@ -539,10 +537,17 @@
 
                     tabla.draw();
 
+                    if (tabla.rows().count() === 1) {
+                        setTimeout(() => {
+                            $('#tabla tbody tr:first td.dtr-control').click();
+                        }, 100);
+                    }
+
                     $("#tablaContainer").fadeIn(200, function() {
                         tabla.columns.adjust();
                         tabla.responsive.recalc();
                     });
+
                 },
                 error: function() {
                     $("#mensaje").css("color", "#e74c3c").html("❌ Error de conexión.");
@@ -551,9 +556,12 @@
                     buscando = false;
                     $("#loader").hide();
                     $("#btnBuscar").prop("disabled", false);
+                    // 👉 limpiar input
+                    $("#buscar").val("");
                 }
             });
         }
+
     </script>
 
 </body>
