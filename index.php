@@ -4,8 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YaYa Envios Paquetes</title>
-    <link rel="icon" type="image/x-icon" sizes="512x512" href="favicon.ico?v=2">
+    <title>Seguimiento de Paquetes</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
@@ -354,10 +353,7 @@
     <div class="bg"></div>
 
     <header>
-        <div class="logo">
-            <img src="logo.jpg" alt="Logo"
-                onerror="this.src='https://cdn-icons-png.flaticon.com/512/726/726469.png'">
-        </div>
+
         <h2>Consulta t&uacute; Paquete</h2>
     </header>
 
