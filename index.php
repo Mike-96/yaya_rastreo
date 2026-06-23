@@ -280,6 +280,35 @@
             color: var(--text-dark);
         }
 
+        .dt-search-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+        }
+
+        .dataTables_filter label {
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dataTables_filter input {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 10px 15px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            min-width: 250px;
+        }
+
+        .dataTables_filter input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+        }
+
         @media (max-width: 1024px) {
             .container {
                 max-width: 90%;
@@ -290,59 +319,115 @@
                 font-size: 1.8rem;
             }
         }
-
+        
         @media (max-width: 768px) {
+
+            /* Header más compacto */
             header {
                 flex-direction: column;
-                padding: 20px;
+                padding: 12px 15px;
+                gap: 8px;
             }
 
             header h2 {
-                font-size: 1.5rem;
+                font-size: 1.3rem;
+                margin: 0;
             }
 
             .container {
-                padding: 20px;
-                margin-top: 10px;
+                padding: 15px;
+                margin-top: 5px;
             }
 
+            /* Warehouse en una sola fila */
             .top-buttons {
-                grid-template-columns: 1fr;
-                gap: 10px;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                margin-bottom: 12px;
             }
 
+            .top-buttons button {
+                padding: 8px;
+                min-height: 42px;
+                font-size: 0.8rem;
+            }
+
+            .top-buttons button i {
+                display: none;
+            }
+
+            /* Buscador */
             .search-box {
                 flex-direction: column;
                 background: transparent;
                 border: none;
                 padding: 0;
-                gap: 10px;
+                gap: 8px;
+                margin-bottom: 12px;
             }
 
             .search-box select,
             .search-box input,
             .search-box button {
+                width: 100% !important;
+                display: block;
                 background: white;
                 border-radius: 12px;
                 border: 1px solid #ddd;
-                width: 100% !important;
-                display: block;
-                height: 55px;
                 margin: 0;
                 font-size: 16px;
             }
 
+            /* Select un poco más compacto */
             .search-box select {
-                border-right: 1px solid #ddd;
+                height: 48px;
+                padding: 0 12px;
             }
 
+            /* Input cómodo, sin aplastarlo */
+            .search-box input {
+                padding: 14px;
+                min-height: 42px;
+                font-size: 12px;
+            }
+
+            /* Botón buscar */
             .search-box button {
+                height: 38px;
                 background: var(--secondary);
                 box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
             }
 
+            #mensaje {
+                margin-bottom: 8px;
+                font-size: .85rem;
+            }
+
+            /* DataTables */
             .dataTables_wrapper {
                 font-size: 0.85rem;
+            }
+
+            .dt-search-wrapper {
+                justify-content: stretch;
+                margin-bottom: 10px;
+            }
+
+            .dataTables_filter {
+                width: 100%;
+            }
+
+            .dataTables_filter label {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .dataTables_filter input {
+                width: 100%;
+                min-width: 0;
+                margin-left: 0 !important;
             }
         }
     </style>
@@ -374,11 +459,12 @@
 
             <div class="search-box">
                 <select id="tipo">
+                    <option value="telefono">📱 Teléfono</option>
                     <option value="tracking">📦 Tracking</option>
                     <option value="warehouse">🏠 Warehouse</option>
                 </select>
 
-                <input type="text" id="buscar" placeholder="Ej: ABC123456789">
+                <input type="text" id="buscar" placeholder="Ingresar número de tracking">
 
                 <button id="btnBuscar" type="button">
                     <i class="fas fa-search"></i> <span class="btn-text">Buscar</span>
@@ -416,6 +502,13 @@
         let buscando = false;
         let tabla = null;
 
+        // Configuración por tipo de búsqueda (placeholder + teclado móvil)
+        const CONFIG_TIPO = {
+            tracking:  { placeholder: "Ingresar número de tracking",  inputmode: "text"    },
+            warehouse: { placeholder: "Ingresar número de warehouse", inputmode: "text"    },
+            telefono:  { placeholder: "Ingresar número de teléfono",  inputmode: "numeric" }
+        };
+
         function escapeHtml(text) {
             return String(text ?? "")
                 .replace(/&/g, "&amp;")
@@ -425,12 +518,24 @@
                 .replace(/'/g, "&#039;");
         }
 
+        function actualizarPlaceholder() {
+            let tipo = $("#tipo").val();
+            let cfg = CONFIG_TIPO[tipo] || CONFIG_TIPO.tracking;
+            $("#buscar")
+                .attr("placeholder", cfg.placeholder)
+                .attr("inputmode", cfg.inputmode)
+                .val("");
+        }
+
         function inicializarTabla() {
             tabla = $('#tabla').DataTable({
                 paging: false,
-                searching: false,
+                searching: true,          // ← antes false
                 info: false,
                 autoWidth: false,
+                ordering: true,
+                order: [[6, "asc"]],
+                dom: '<"dt-search-wrapper"f>rt',  // ← solo muestra el buscador + la tabla
                 responsive: {
                     details: {
                         display: $.fn.dataTable.Responsive.display.childRowImmediate,
@@ -450,6 +555,12 @@
 
         $(document).ready(function() {
             inicializarTabla();
+            actualizarPlaceholder();
+
+            $("#tipo").on("change", function() {
+                actualizarPlaceholder();
+                $("#buscar").focus();
+            });
 
             $("#btnBuscar").on("click", function() {
                 buscar();
@@ -474,7 +585,7 @@
             let tipo = $("#tipo").val();
 
             if (!q) {
-                $("#mensaje").css("color", "#e74c3c").html("⚠️ Por favor, ingrese un número.");
+                $("#mensaje").css("color", "#e74c3c").html("⚠️ Por favor, ingrese un valor.");
                 return;
             }
 
@@ -514,9 +625,9 @@
                         let claseEstatus = entregado ? "status-pagado" : "status-bodega";
                         let textoEstatus = entregado ? "Entregado" : "En Bodega";
 
-                        let fechaEntrega = entregado 
-                        ? `<span style="color:#155724; font-weight:bold;">${escapeHtml(row.fecha_entrega || "")}</span>`
-                        : `<span style="color:#999;">N/A</span>`;
+                        let fechaEntrega = entregado
+                            ? `<span style="color:#155724; font-weight:bold;">${escapeHtml(row.fecha_entrega || "")}</span>`
+                            : `<span style="color:#999;">N/A</span>`;
 
                         tabla.row.add([
                             `<b>${fecha}</b>`,
@@ -527,11 +638,19 @@
                             `${peso} lbs`,
                             `<span class="status-badge ${claseEstatus}">${textoEstatus}</span>`,
                             fechaEntrega
-
                         ]);
                     });
 
                     tabla.draw();
+
+                    // Si fue búsqueda por teléfono, mostrar resumen
+                    if (tipo === "telefono") {
+                        let total = data.length;
+                        let enBodega = data.filter(r => String(r.estatus).toLowerCase() === "bodega").length;
+                        let entregados = total - enBodega;
+                        $("#mensaje").css("color", "#0b3c5d")
+                            .html(`📦 ${total} paquete(s): <b>${enBodega}</b> en bodega · <b>${entregados}</b> entregado(s) (últimos 15 días)`);
+                    }
 
                     if (tabla.rows().count() === 1) {
                         setTimeout(() => {
@@ -557,7 +676,6 @@
                 }
             });
         }
-
     </script>
 
 </body>
