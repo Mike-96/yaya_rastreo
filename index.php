@@ -623,7 +623,7 @@
                         let peso = escapeHtml(row.peso || "0");
 
                         let claseEstatus = entregado ? "status-pagado" : "status-bodega";
-                        let textoEstatus = entregado ? "Entregado" : "En Bodega";
+                        let textoEstatus = entregado ? "Entregado" : "Disponible";
 
                         let fechaEntrega = entregado
                             ? `<span style="color:#155724; font-weight:bold;">${escapeHtml(row.fecha_entrega || "")}</span>`
