@@ -74,6 +74,20 @@ body {
     padding: 20px;
 }
 
+/* ---------- Modal compartir (QR) ---------- */
+.compartir-qr-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.compartir-qr-wrap img {
+    border: 1px solid #e5e9ee;
+    border-radius: 8px;
+    padding: 8px;
+    background: #fff;
+}
+
 /* ---------- Footer ---------- */
 .catalogo-footer {
     background: var(--primary);

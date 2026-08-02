@@ -22,6 +22,10 @@ require_once __DIR__ . '/config.php';
             <span><?php echo htmlspecialchars(EMPRESA_NOMBRE, ENT_QUOTES) ?: 'Catálogo de Productos'; ?></span>
         </div>
         <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm btn-light" id="btnCompartirCatalogo" data-bs-toggle="modal"
+                data-bs-target="#modalCompartir">
+                <i class="bi bi-share"></i> Compartir
+            </button>
             <button type="button" class="btn btn-sm btn-light offcanvas-filtros-toggle" data-bs-toggle="offcanvas"
                 data-bs-target="#offcanvasFiltros">
                 <i class="bi bi-funnel"></i> Filtros
@@ -273,6 +277,33 @@ require_once __DIR__ . '/config.php';
         </div>
     </div>
 
+    <!-- ============ MODAL COMPARTIR (QR + enlace) ============ -->
+    <div class="modal fade" id="modalCompartir" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-share"></i> Compartir catálogo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="compartirQr" class="compartir-qr-wrap mb-2"></div>
+                    <button type="button" id="btnDescargarQr" class="btn btn-outline-secondary btn-sm mb-3">
+                        <i class="bi bi-download"></i> Descargar QR
+                    </button>
+                    <div class="input-group">
+                        <input type="text" id="inputEnlaceCompartir" class="form-control form-control-sm" readonly>
+                        <button type="button" id="btnCopiarEnlace" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                    <div id="textoCopiado" class="small text-success mt-2" style="display:none;">
+                        <i class="bi bi-check-circle-fill"></i> Enlace copiado
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ============ TOAST: producto agregado ============ -->
     <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1080;">
         <div id="toastAgregado" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive"
@@ -288,8 +319,11 @@ require_once __DIR__ . '/config.php';
 
     <script src="plugins/jquery/jquery-4.0.0.min.js"></script>
     <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="plugins/qrcode/qrcode.min.js"></script>
     <script>
         const WHATSAPP_NUMERO = "<?php echo htmlspecialchars(WHATSAPP_NUMERO, ENT_QUOTES); ?>";
+        const CATALOGO_URL = "<?php echo htmlspecialchars(CATALOGO_URL, ENT_QUOTES); ?>";
+        const EMPRESA_NOMBRE = "<?php echo htmlspecialchars(EMPRESA_NOMBRE, ENT_QUOTES); ?>";
     </script>
     <script src="assets/js/catalogo.js"></script>
 </body>

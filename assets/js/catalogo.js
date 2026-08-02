@@ -522,6 +522,145 @@
     }
 
     // =====================================================================
+    //  COMPARTIR: composición del QR en canvas (logo + nombre + leyenda)
+    // =====================================================================
+
+    // Guarda el <canvas> generado más recientemente para poder descargarlo.
+    let canvasQrCompartir = null;
+
+    function envolverTexto(ctx, texto, anchoMaximo) {
+        const palabras = texto.split(' ');
+        const lineas = [];
+        let lineaActual = '';
+        palabras.forEach((palabra) => {
+            const prueba = lineaActual ? lineaActual + ' ' + palabra : palabra;
+            if (ctx.measureText(prueba).width > anchoMaximo && lineaActual) {
+                lineas.push(lineaActual);
+                lineaActual = palabra;
+            } else {
+                lineaActual = prueba;
+            }
+        });
+        if (lineaActual) lineas.push(lineaActual);
+        return lineas;
+    }
+
+    function generarCanvasQr(enlace, logoImg) {
+        const qr = qrcode(0, 'M');
+        qr.addData(enlace);
+        qr.make();
+        const moduleCount = qr.getModuleCount();
+
+        const anchoCanvas = 300;
+        const margenLateral = 30;
+        const zonaQuietaCeldas = 2;
+        const cellSize = Math.floor((anchoCanvas - margenLateral * 2) / (moduleCount + zonaQuietaCeldas * 2));
+        const qrSize = cellSize * (moduleCount + zonaQuietaCeldas * 2);
+        const anchoUtil = anchoCanvas - margenLateral * 2;
+
+        const nombreEmpresa = (typeof EMPRESA_NOMBRE !== 'undefined') ? EMPRESA_NOMBRE.trim() : '';
+        const leyenda = nombreEmpresa
+            ? 'Escaneá el código para ver el catálogo de productos de ' + nombreEmpresa
+            : 'Escaneá el código para ver nuestro catálogo de productos';
+
+        // Canvas temporal solo para medir el texto de la leyenda antes de fijar el tamaño final.
+        const medidor = document.createElement('canvas').getContext('2d');
+        medidor.font = '13px Arial, sans-serif';
+        const lineasLeyenda = envolverTexto(medidor, leyenda, anchoUtil);
+
+        let logoAncho = 0;
+        let logoAlto = 0;
+        if (logoImg) {
+            const logoAltoMax = 60;
+            const ratio = logoImg.naturalWidth / logoImg.naturalHeight;
+            logoAlto = logoAltoMax;
+            logoAncho = logoAltoMax * ratio;
+            if (logoAncho > anchoUtil) {
+                logoAncho = anchoUtil;
+                logoAlto = logoAncho / ratio;
+            }
+        }
+
+        // Bloques a dibujar, de arriba a abajo, cada uno con su alto en px.
+        const bloques = [{ tipo: 'espacio', alto: 22 }];
+        if (logoImg) {
+            bloques.push({ tipo: 'logo', alto: logoAlto, ancho: logoAncho });
+            bloques.push({ tipo: 'espacio', alto: 10 });
+        }
+        if (nombreEmpresa) {
+            bloques.push({ tipo: 'nombre', alto: 22, texto: nombreEmpresa });
+            bloques.push({ tipo: 'espacio', alto: 14 });
+        }
+        bloques.push({ tipo: 'qr', alto: qrSize });
+        bloques.push({ tipo: 'espacio', alto: 16 });
+        lineasLeyenda.forEach((linea) => {
+            bloques.push({ tipo: 'linea', alto: 18, texto: linea });
+        });
+        bloques.push({ tipo: 'espacio', alto: 22 });
+
+        const altoCanvas = bloques.reduce((suma, b) => suma + b.alto, 0);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = anchoCanvas;
+        canvas.height = altoCanvas;
+        const ctx = canvas.getContext('2d');
+
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, anchoCanvas, altoCanvas);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        let y = 0;
+        bloques.forEach((bloque) => {
+            const centroY = y + bloque.alto / 2;
+            if (bloque.tipo === 'logo') {
+                ctx.drawImage(logoImg, (anchoCanvas - bloque.ancho) / 2, y, bloque.ancho, bloque.alto);
+            } else if (bloque.tipo === 'nombre') {
+                ctx.fillStyle = '#d35400';
+                ctx.font = '700 16px Arial, sans-serif';
+                ctx.fillText(bloque.texto, anchoCanvas / 2, centroY);
+            } else if (bloque.tipo === 'qr') {
+                const offsetX = (anchoCanvas - qrSize) / 2 + zonaQuietaCeldas * cellSize;
+                ctx.fillStyle = '#1a1a1a';
+                for (let fila = 0; fila < moduleCount; fila++) {
+                    for (let col = 0; col < moduleCount; col++) {
+                        if (qr.isDark(fila, col)) {
+                            ctx.fillRect(offsetX + col * cellSize, y + zonaQuietaCeldas * cellSize + fila * cellSize, cellSize, cellSize);
+                        }
+                    }
+                }
+            } else if (bloque.tipo === 'linea') {
+                ctx.fillStyle = '#5a6473';
+                ctx.font = '13px Arial, sans-serif';
+                ctx.fillText(bloque.texto, anchoCanvas / 2, centroY);
+            }
+            y += bloque.alto;
+        });
+
+        return canvas;
+    }
+
+    function renderizarModalCompartir(enlace) {
+        const contenedorQr = document.getElementById('compartirQr');
+        contenedorQr.innerHTML = '<div class="text-muted small py-4">Generando QR...</div>';
+
+        const logoImg = new Image();
+        logoImg.onload = function () {
+            const canvas = generarCanvasQr(enlace, logoImg);
+            canvasQrCompartir = canvas;
+            contenedorQr.innerHTML = '';
+            contenedorQr.appendChild(canvas);
+        };
+        logoImg.onerror = function () {
+            const canvas = generarCanvasQr(enlace, null);
+            canvasQrCompartir = canvas;
+            contenedorQr.innerHTML = '';
+            contenedorQr.appendChild(canvas);
+        };
+        logoImg.src = 'assets/img/logo.png';
+    }
+
+    // =====================================================================
     //  EVENTOS
     // =====================================================================
 
@@ -664,6 +803,50 @@
         });
         $('#offcanvasFiltros').on('hidden.bs.offcanvas', function () {
             $('.col-filtros').append($('#offcanvasFiltrosBody').children());
+        });
+
+        // Compartir catálogo: QR (con logo, nombre y leyenda) + enlace
+        $('#modalCompartir').on('show.bs.modal', function () {
+            const enlace = (typeof CATALOGO_URL !== 'undefined' && CATALOGO_URL)
+                ? CATALOGO_URL
+                : window.location.origin + window.location.pathname;
+            $('#inputEnlaceCompartir').val(enlace);
+            $('#textoCopiado').hide();
+
+            if (typeof qrcode === 'function') {
+                renderizarModalCompartir(enlace);
+            }
+        });
+
+        $('#btnDescargarQr').on('click', function () {
+            if (!canvasQrCompartir) return;
+            const nombreArchivo = 'qr-catalogo' +
+                ((typeof EMPRESA_NOMBRE !== 'undefined' && EMPRESA_NOMBRE)
+                    ? '-' + EMPRESA_NOMBRE.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+                    : '') + '.png';
+            const enlaceDescarga = document.createElement('a');
+            enlaceDescarga.href = canvasQrCompartir.toDataURL('image/png');
+            enlaceDescarga.download = nombreArchivo;
+            document.body.appendChild(enlaceDescarga);
+            enlaceDescarga.click();
+            document.body.removeChild(enlaceDescarga);
+        });
+
+        $('#btnCopiarEnlace').on('click', function () {
+            const enlace = $('#inputEnlaceCompartir').val();
+            const mostrarCopiado = () => {
+                $('#textoCopiado').stop(true).show();
+                setTimeout(() => $('#textoCopiado').fadeOut(), 2000);
+            };
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(enlace).then(mostrarCopiado);
+            } else {
+                const campo = document.getElementById('inputEnlaceCompartir');
+                campo.select();
+                campo.setSelectionRange(0, 99999);
+                document.execCommand('copy');
+                mostrarCopiado();
+            }
         });
     });
 
