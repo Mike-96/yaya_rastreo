@@ -649,7 +649,7 @@
                         let enBodega = data.filter(r => String(r.estatus).toLowerCase() === "bodega").length;
                         let entregados = total - enBodega;
                         $("#mensaje").css("color", "#0b3c5d")
-                            .html(`📦 ${total} paquete(s): <b>${enBodega}</b> en bodega · <b>${entregados}</b> entregado(s) (últimos 15 días)`);
+                            .html(`📦 ${total} Paquete(s): <b>${enBodega}</b> Disponibles · <b>${entregados}</b> Entregado(s) (últimos 15 días)`);
                     }
 
                     if (tabla.rows().count() === 1) {
