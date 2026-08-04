@@ -789,6 +789,8 @@
 
         $('#btnConfirmarVaciar').on('click', function () {
             guardarCarrito([]);
+            guardarNombreCliente('');
+            $('#inputNombreCliente').val('');
             const instancia = bootstrap.Modal.getInstance(document.getElementById('modalConfirmarVaciar'));
             if (instancia) instancia.hide();
         });

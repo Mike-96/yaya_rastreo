@@ -135,6 +135,10 @@ require_once __DIR__ . '/config.php';
                 <?php endif; ?>
             </div>
         </div>
+        <div class="footer-aviso-privacidad">
+            <i class="bi bi-shield-lock"></i>
+            Tu nombre y tu carrito se guardan solo en este dispositivo. Los pedidos se envían directo por WhatsApp y no se almacenan en este sitio.
+        </div>
     </footer>
 
     <!-- ============ OFFCANVAS DE FILTROS (mobile) ============ -->
