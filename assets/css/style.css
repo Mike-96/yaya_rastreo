@@ -665,6 +665,16 @@ body {
     display: none;
 }
 
+.btn-header-accion {
+    padding: 4px 10px;
+    font-size: 0.78rem;
+    line-height: 1.4;
+}
+
+.btn-header-accion i {
+    font-size: 0.85rem;
+}
+
 @media (max-width: 991px) {
     .col-filtros {
         display: none;
@@ -672,5 +682,19 @@ body {
 
     .offcanvas-filtros-toggle {
         display: inline-block;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .catalogo-header-acciones {
+        margin-left: auto;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+    }
+
+    .btn-header-accion {
+        padding: 3px 8px;
+        font-size: 0.72rem;
     }
 }

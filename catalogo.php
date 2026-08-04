@@ -21,14 +21,14 @@ require_once __DIR__ . '/config.php';
             <img src="assets/img/logo.png" alt="Logo" class="logo-empresa">
             <span><?php echo htmlspecialchars(EMPRESA_NOMBRE, ENT_QUOTES) ?: 'Catálogo de Productos'; ?></span>
         </div>
-        <div class="d-flex align-items-center gap-2">
-            <button type="button" class="btn btn-sm btn-light" id="btnCompartirCatalogo" data-bs-toggle="modal"
+        <div class="d-flex align-items-center gap-2 catalogo-header-acciones">
+            <button type="button" class="btn btn-sm btn-light btn-header-accion" id="btnCompartirCatalogo" data-bs-toggle="modal"
                 data-bs-target="#modalCompartir">
                 <i class="bi bi-share"></i> Compartir
             </button>
-            <button type="button" class="btn btn-sm btn-light offcanvas-filtros-toggle" data-bs-toggle="offcanvas"
+            <button type="button" class="btn btn-sm btn-light btn-header-accion offcanvas-filtros-toggle" data-bs-toggle="offcanvas"
                 data-bs-target="#offcanvasFiltros">
-                <i class="bi bi-funnel"></i> Filtros
+                <i class="bi bi-funnel"></i> Búsqueda
             </button>
         </div>
     </div>
@@ -140,7 +140,7 @@ require_once __DIR__ . '/config.php';
     <!-- ============ OFFCANVAS DE FILTROS (mobile) ============ -->
     <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasFiltros">
         <div class="offcanvas-header">
-            <h5 class="offcanvas-title">Filtros</h5>
+            <h5 class="offcanvas-title">Búsqueda</h5>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
         </div>
         <div class="offcanvas-body" id="offcanvasFiltrosBody">
