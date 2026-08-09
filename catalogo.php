@@ -23,16 +23,16 @@ function assetVersionado($rutaRelativa)
     <title>Cpsystems Catálogo</title>
 
     <!-- Nombre corto al agregar la web como app al celular (icono + pantalla de inicio) -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="<?php echo assetVersionado('manifest.json'); ?>">
     <meta name="application-name" content="Cpsystems Catálogo">
     <meta name="apple-mobile-web-app-title" content="Cpsystems Catálogo">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#d35400">
 
-    <link rel="icon" type="image/png" sizes="192x192" href="assets/img/icons/icon-192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="assets/img/icons/icon-512.png">
-    <link rel="apple-touch-icon" href="assets/img/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="<?php echo assetVersionado('assets/img/icons/icon-192.png'); ?>">
+    <link rel="icon" type="image/png" sizes="512x512" href="<?php echo assetVersionado('assets/img/icons/icon-512.png'); ?>">
+    <link rel="apple-touch-icon" href="<?php echo assetVersionado('assets/img/icons/apple-touch-icon.png'); ?>">
 
     <link rel="stylesheet" href="plugins/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="plugins/bootstrap-icons/font/bootstrap-icons.min.css">
