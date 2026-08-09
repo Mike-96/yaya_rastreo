@@ -339,6 +339,7 @@ body {
 
 /* ---------- Tarjeta de producto ---------- */
 .tarjeta-producto {
+    position: relative;
     background: #fff;
     border-radius: 14px;
     overflow: hidden;
@@ -347,6 +348,25 @@ body {
     display: flex;
     flex-direction: column;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tarjeta-disponible-fila {
+    display: flex;
+    justify-content: flex-end;
+    padding: 8px 14px 0;
+}
+
+.badge-disponible {
+    background: #27ae60;
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .tarjeta-producto:hover {

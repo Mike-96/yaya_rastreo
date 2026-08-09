@@ -396,6 +396,9 @@
                 '<img src="' + img + '" loading="lazy" decoding="async" ' +
                 'onerror="this.src=\'' + IMAGEN_PLACEHOLDER + '\'">' +
                 '</div>' +
+                '<div class="tarjeta-disponible-fila">' +
+                '<div class="badge-disponible"><i class="bi bi-check-circle-fill"></i> Disponible</div>' +
+                '</div>' +
                 '<div class="tarjeta-cuerpo">' +
                 '<div class="tarjeta-marca">' + escapeHtml(p.marca || '') + '</div>' +
                 '<div class="tarjeta-nombre abrir-detalle">' + escapeHtml(p.nombre) + '</div>' +

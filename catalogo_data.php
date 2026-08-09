@@ -173,16 +173,20 @@ try {
             $porPagina  = max(1, min(60, intval($_GET['por_pagina'] ?? 24)));
             $offset     = ($pagina - 1) * $porPagina;
 
+            // La marca va primero en el ORDER BY para agrupar productos de
+            // una misma marca (en cualquier filtro/búsqueda activa), excepto
+            // en "más reciente": ese modo respeta siempre fecha_sync DESC
+            // primero, tal cual estaba antes.
             $orden = $_GET['orden'] ?? 'relevancia';
             switch ($orden) {
                 case 'precio_asc':
-                    $ordenSql = 'precio_venta_cordoba ASC';
+                    $ordenSql = 'marca ASC, precio_venta_cordoba ASC';
                     break;
                 case 'precio_desc':
-                    $ordenSql = 'precio_venta_cordoba DESC';
+                    $ordenSql = 'marca ASC, precio_venta_cordoba DESC';
                     break;
                 case 'nombre':
-                    $ordenSql = 'nombre ASC';
+                    $ordenSql = 'marca ASC, nombre ASC';
                     break;
                 default:
                     $ordenSql = 'fecha_sync DESC, nombre ASC';

@@ -1,5 +1,18 @@
 <?php
 require_once __DIR__ . '/config.php';
+
+/**
+ * Le agrega ?v=<fecha de modificación del archivo> a un asset local (css/js).
+ * Así, cada vez que se edita style.css o catalogo.js, la URL cambia y el
+ * navegador del cliente descarga la versión nueva automáticamente, sin
+ * necesidad de pedirle a nadie que borre la caché.
+ */
+function assetVersionado($rutaRelativa)
+{
+    $rutaAbsoluta = __DIR__ . '/' . $rutaRelativa;
+    $version = file_exists($rutaAbsoluta) ? filemtime($rutaAbsoluta) : time();
+    return $rutaRelativa . '?v=' . $version;
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -7,11 +20,23 @@ require_once __DIR__ . '/config.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo de Productos</title>
+    <title>Cpsystems Catálogo</title>
+
+    <!-- Nombre corto al agregar la web como app al celular (icono + pantalla de inicio) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="application-name" content="Cpsystems Catálogo">
+    <meta name="apple-mobile-web-app-title" content="Cpsystems Catálogo">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#d35400">
+
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/img/icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="assets/img/icons/icon-512.png">
+    <link rel="apple-touch-icon" href="assets/img/icons/apple-touch-icon.png">
 
     <link rel="stylesheet" href="plugins/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="plugins/bootstrap-icons/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo assetVersionado('assets/css/style.css'); ?>">
 </head>
 
 <body>
@@ -329,7 +354,7 @@ require_once __DIR__ . '/config.php';
         const CATALOGO_URL = "<?php echo htmlspecialchars(CATALOGO_URL, ENT_QUOTES); ?>";
         const EMPRESA_NOMBRE = "<?php echo htmlspecialchars(EMPRESA_NOMBRE, ENT_QUOTES); ?>";
     </script>
-    <script src="assets/js/catalogo.js"></script>
+    <script src="<?php echo assetVersionado('assets/js/catalogo.js'); ?>"></script>
 </body>
 
 </html>
