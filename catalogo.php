@@ -201,6 +201,9 @@ function assetVersionado($rutaRelativa)
                             <div id="modalProductoNumParteWrap" class="mb-3" style="display:none;">
                                 <span class="tarjeta-num-parte" id="modalProductoNumParte"></span>
                             </div>
+                            <div id="modalProductoUnidadWrap" class="mb-2" style="display:none;">
+                                <span class="text-muted small">Unidad de venta: <strong id="modalProductoUnidad"></strong></span>
+                            </div>
                             <div class="detalle-precio-banner" id="modalProductoPrecio">C$ 0.00</div>
                             <div id="modalProductoDescripcionWrap" class="mt-3" style="display:none;">
                                 <h6 class="text-uppercase small fw-bold text-muted">Descripción</h6>

@@ -403,6 +403,7 @@
                 '<div class="tarjeta-marca">' + escapeHtml(p.marca || '') + '</div>' +
                 '<div class="tarjeta-nombre abrir-detalle">' + escapeHtml(p.nombre) + '</div>' +
                 (p.num_parte ? '<div class="tarjeta-num-parte">No. Parte: ' + escapeHtml(p.num_parte) + '</div>' : '') +
+                (p.unidad ? '<div class="tarjeta-unidad">Unidad: ' + escapeHtml(p.unidad) + '</div>' : '') +
                 '<div class="tarjeta-precio">' + formatoCordoba(p.precio_venta_cordoba) + '</div>' +
                 '<div class="tarjeta-acciones">' +
                 '<button type="button" class="btn-ver-detalle abrir-detalle"><i class="bi bi-eye"></i> Ver</button>' +
@@ -464,6 +465,13 @@
             $('#modalProductoNumParteWrap').show();
         } else {
             $('#modalProductoNumParteWrap').hide();
+        }
+
+        if (datosProducto.unidad) {
+            $('#modalProductoUnidad').text(datosProducto.unidad);
+            $('#modalProductoUnidadWrap').show();
+        } else {
+            $('#modalProductoUnidadWrap').hide();
         }
 
         const imagenPrincipal = datosProducto.imagen_principal || IMAGEN_PLACEHOLDER;
