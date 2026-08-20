@@ -353,7 +353,7 @@ body {
 .tarjeta-disponible-fila {
     display: flex;
     justify-content: flex-end;
-    padding: 8px 14px 0;
+    padding: 6px 14px 0;
 }
 
 .badge-oferta {
@@ -406,7 +406,7 @@ body {
 }
 
 .tarjeta-cuerpo {
-    padding: 12px 14px 14px;
+    padding: 4px 14px 14px;
     display: flex;
     flex-direction: column;
     flex: 1;
