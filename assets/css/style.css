@@ -455,7 +455,7 @@ body {
 }
 
 .tarjeta-precio-oferta {
-    font-size: 0.8rem;
+    font-size: 0.92rem;
     color: #9aa3af;
     text-decoration: line-through;
 }
@@ -577,12 +577,18 @@ body {
     margin-bottom: 4px;
 }
 
+.detalle-precio-oferta-fila {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
 .detalle-precio-oferta {
     display: inline-block;
     font-size: 0.95rem;
     color: #9aa3af;
     text-decoration: line-through;
-    margin-bottom: 4px;
 }
 
 .detalle-precio-banner {

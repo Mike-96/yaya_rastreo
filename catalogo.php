@@ -202,10 +202,11 @@ function assetVersionado($rutaRelativa)
                                 <span class="tarjeta-num-parte" id="modalProductoNumParte"></span>
                             </div>
                             <div id="modalProductoUnidadWrap" class="mb-2" style="display:none;">
-                                <span class="text-muted small">Unidad de venta: <strong id="modalProductoUnidad"></strong></span>
+                                <span class="text-muted small">Presentación: <strong id="modalProductoUnidad"></strong></span>
                             </div>
-                            <div id="modalProductoPrecioOfertaWrap" style="display:none;">
+                            <div id="modalProductoPrecioOfertaWrap" class="detalle-precio-oferta-fila" style="display:none;">
                                 <span class="detalle-precio-oferta" id="modalProductoPrecioOferta"></span>
+                                <span class="badge-oferta"><i class="bi bi-tag-fill"></i> Oferta</span>
                             </div>
                             <div class="detalle-precio-banner" id="modalProductoPrecio">C$ 0.00</div>
                             <div id="modalProductoDescripcionWrap" class="mt-3" style="display:none;">
