@@ -404,6 +404,7 @@
                 '<div class="tarjeta-nombre abrir-detalle">' + escapeHtml(p.nombre) + '</div>' +
                 (p.num_parte ? '<div class="tarjeta-num-parte">No. Parte: ' + escapeHtml(p.num_parte) + '</div>' : '') +
                 (p.unidad ? '<div class="tarjeta-unidad">Presentación: ' + escapeHtml(p.unidad) + '</div>' : '') +
+                (p.precio_oferta ? '<div class="tarjeta-precio-oferta">' + formatoCordoba(p.precio_oferta) + '</div>' : '') +
                 '<div class="tarjeta-precio">' + formatoCordoba(p.precio_venta_cordoba) + '</div>' +
                 '<div class="tarjeta-acciones">' +
                 '<button type="button" class="btn-ver-detalle abrir-detalle"><i class="bi bi-eye"></i> Ver</button>' +
@@ -451,6 +452,13 @@
         $('#modalProductoMarca').text(datosProducto.marca || '');
         $('#modalProductoNombre').text(datosProducto.nombre || '');
         $('#modalProductoPrecio').text(formatoCordoba(datosProducto.precio_venta_cordoba));
+
+        if (datosProducto.precio_oferta) {
+            $('#modalProductoPrecioOferta').text(formatoCordoba(datosProducto.precio_oferta));
+            $('#modalProductoPrecioOfertaWrap').show();
+        } else {
+            $('#modalProductoPrecioOfertaWrap').hide();
+        }
 
         const descripcion = (datosProducto.comentarios || '').trim();
         if (descripcion !== '') {

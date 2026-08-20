@@ -201,8 +201,8 @@ try {
             // Listado paginado
             // (alías id_producto -> id, imagen_url -> imagen_principal, para no tocar el front)
             $sql = "SELECT id_producto AS id, codigo, nombre, num_parte, marca, categoria, departamento,
-                           unidad, precio_venta_cordoba, stock, comentarios, imagen_url AS imagen_principal,
-                           fecha_sync
+                           unidad, precio_venta_cordoba, precio_oferta, vencimiento_oferta, stock, comentarios,
+                           imagen_url AS imagen_principal, fecha_sync
                     FROM productos_catalogo
                     WHERE {$filtros['where']}
                     ORDER BY {$ordenSql}
@@ -217,9 +217,21 @@ try {
             $stmt->execute();
             $productos = $stmt->fetchAll();
 
+            $hoy = date('Y-m-d');
+
             foreach ($productos as &$producto) {
                 $producto['imagen_principal'] = versionarImagen($producto['imagen_principal'], $producto['fecha_sync']);
                 unset($producto['fecha_sync']);
+
+                // El precio de oferta (más alto, tachado) solo se muestra
+                // mientras la fecha de vencimiento sea hoy o futura.
+                $ofertaVigente = $producto['vencimiento_oferta'] !== null
+                    && $producto['vencimiento_oferta'] >= $hoy;
+
+                if (!$ofertaVigente) {
+                    $producto['precio_oferta'] = null;
+                }
+                unset($producto['vencimiento_oferta']);
             }
             unset($producto);
 
