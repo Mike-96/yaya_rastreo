@@ -126,6 +126,7 @@ function assetVersionado($rutaRelativa)
                         <option value="nombre">Nombre A-Z</option>
                         <option value="precio_asc">Precio: menor a mayor</option>
                         <option value="precio_desc">Precio: mayor a menor</option>
+                        <option value="ofertas">Ofertas</option>
                     </select>
                 </div>
 

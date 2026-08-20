@@ -101,6 +101,10 @@ function construirFiltros()
         $parametros[':precio_max'] = floatval($_GET['precio_max']);
     }
 
+    if (($_GET['orden'] ?? '') === 'ofertas') {
+        $condiciones[] = "precio_oferta IS NOT NULL AND vencimiento_oferta >= CURDATE()";
+    }
+
     return [
         'where'      => implode(' AND ', $condiciones),
         'parametros' => $parametros,
@@ -186,6 +190,9 @@ try {
                     $ordenSql = 'marca ASC, precio_venta_cordoba DESC';
                     break;
                 case 'nombre':
+                    $ordenSql = 'marca ASC, nombre ASC';
+                    break;
+                case 'ofertas':
                     $ordenSql = 'marca ASC, nombre ASC';
                     break;
                 default:
