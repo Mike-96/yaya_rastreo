@@ -30,6 +30,25 @@ function assetVersionado($rutaRelativa)
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#d35400">
 
+    <?php
+        // Base absoluta del sitio (ej. "https://cpsystemnic.com"), a partir de
+        // CATALOGO_URL en config.php. Los previews (WhatsApp, Facebook, etc.)
+        // necesitan URLs completas, no relativas.
+        $baseUrlCatalogo = rtrim(preg_replace('#/catalogo\.php$#', '', CATALOGO_URL), '/');
+        $ogTitulo = htmlspecialchars((EMPRESA_NOMBRE ?: 'Catálogo') . ' - Catálogo de Productos', ENT_QUOTES);
+        $ogDescripcion = 'Mirá nuestro catálogo de productos y hacé tu pedido directo por WhatsApp.';
+        $ogImagen = $baseUrlCatalogo . '/assets/img/logo.png';
+    ?>
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="<?php echo $ogTitulo; ?>">
+    <meta property="og:description" content="<?php echo htmlspecialchars($ogDescripcion, ENT_QUOTES); ?>">
+    <meta property="og:image" content="<?php echo htmlspecialchars($ogImagen, ENT_QUOTES); ?>">
+    <meta property="og:url" content="<?php echo htmlspecialchars(CATALOGO_URL, ENT_QUOTES); ?>">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?php echo $ogTitulo; ?>">
+    <meta name="twitter:description" content="<?php echo htmlspecialchars($ogDescripcion, ENT_QUOTES); ?>">
+    <meta name="twitter:image" content="<?php echo htmlspecialchars($ogImagen, ENT_QUOTES); ?>">
+
     <link rel="icon" type="image/png" sizes="192x192" href="<?php echo assetVersionado('assets/img/icons/icon-192.png'); ?>">
     <link rel="icon" type="image/png" sizes="512x512" href="<?php echo assetVersionado('assets/img/icons/icon-512.png'); ?>">
     <link rel="apple-touch-icon" href="<?php echo assetVersionado('assets/img/icons/apple-touch-icon.png'); ?>">
