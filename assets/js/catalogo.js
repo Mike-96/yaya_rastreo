@@ -404,8 +404,13 @@
                 '<div class="tarjeta-nombre abrir-detalle">' + escapeHtml(p.nombre) + '</div>' +
                 (p.num_parte ? '<div class="tarjeta-num-parte">No. Parte: ' + escapeHtml(p.num_parte) + '</div>' : '') +
                 (p.unidad ? '<div class="tarjeta-unidad">Presentación: ' + escapeHtml(p.unidad) + '</div>' : '') +
+                '<div class="tarjeta-precio-wrap">' +
+                '<div class="tarjeta-precio-textos">' +
                 (p.precio_oferta ? '<div class="tarjeta-precio-oferta">' + formatoCordoba(p.precio_oferta) + '</div>' : '') +
                 '<div class="tarjeta-precio">' + formatoCordoba(p.precio_venta_cordoba) + '</div>' +
+                '</div>' +
+                (p.precio_oferta ? '<div class="badge-oferta"><i class="bi bi-tag-fill"></i> Oferta</div>' : '') +
+                '</div>' +
                 '<div class="tarjeta-acciones">' +
                 '<button type="button" class="btn-ver-detalle abrir-detalle"><i class="bi bi-eye"></i> Ver</button>' +
                 '<button type="button" class="btn-agregar-carrito btn-agregar-directo"><i class="bi bi-cart-plus"></i> Agregar</button>' +
