@@ -524,6 +524,15 @@ body {
 }
 
 /* ---------- Modal de detalle de producto ---------- */
+/* Botones del footer (Compartir / Agregar al carrito): mismo tamaño que los de las tarjetas */
+#modalProducto .btn-modal-accion {
+    width: auto;
+    padding: 6px 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 10px;
+}
+
 #modalProducto .modal-dialog {
     --bs-modal-width: 1320px;
     max-width: 95vw;

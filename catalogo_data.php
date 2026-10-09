@@ -19,6 +19,7 @@
  * Acciones (parámetro "accion" por GET):
  *   - meta:     marcas, categorías, departamentos y rango de precio
  *   - listar:   productos filtrados + paginados
+ *   - producto: un solo producto por id (enlaces compartidos)
  *   - imagenes: galería de imágenes de un producto
  */
 
@@ -128,6 +129,34 @@ function versionarImagen($url, $fechaSync)
     return $url . $separador . 'v=' . $version;
 }
 
+/**
+ * Deja una fila de productos_catalogo lista para el front: versiona la
+ * imagen principal y anula el precio de oferta si ya venció.
+ */
+function normalizarProducto(array $producto)
+{
+    $producto['imagen_principal'] = versionarImagen($producto['imagen_principal'], $producto['fecha_sync']);
+    unset($producto['fecha_sync']);
+
+    // El precio de oferta (más alto, tachado) solo se muestra
+    // mientras la fecha de vencimiento sea hoy o futura.
+    $ofertaVigente = $producto['vencimiento_oferta'] !== null
+        && $producto['vencimiento_oferta'] >= date('Y-m-d');
+
+    if (!$ofertaVigente) {
+        $producto['precio_oferta'] = null;
+    }
+    unset($producto['vencimiento_oferta']);
+
+    return $producto;
+}
+
+// Columnas que consume catalogo.js
+// (alías id_producto -> id, imagen_url -> imagen_principal, para no tocar el front)
+const COLUMNAS_PRODUCTO = "id_producto AS id, codigo, nombre, num_parte, marca, categoria, departamento,
+                           unidad, precio_venta_cordoba, precio_oferta, vencimiento_oferta, stock, comentarios,
+                           imagen_url AS imagen_principal, fecha_sync";
+
 try {
     switch ($accion) {
 
@@ -206,10 +235,7 @@ try {
             $total = intval($stmtTotal->fetchColumn());
 
             // Listado paginado
-            // (alías id_producto -> id, imagen_url -> imagen_principal, para no tocar el front)
-            $sql = "SELECT id_producto AS id, codigo, nombre, num_parte, marca, categoria, departamento,
-                           unidad, precio_venta_cordoba, precio_oferta, vencimiento_oferta, stock, comentarios,
-                           imagen_url AS imagen_principal, fecha_sync
+            $sql = "SELECT " . COLUMNAS_PRODUCTO . "
                     FROM productos_catalogo
                     WHERE {$filtros['where']}
                     ORDER BY {$ordenSql}
@@ -222,25 +248,7 @@ try {
             $stmt->bindValue(':limite', $porPagina, PDO::PARAM_INT);
             $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
             $stmt->execute();
-            $productos = $stmt->fetchAll();
-
-            $hoy = date('Y-m-d');
-
-            foreach ($productos as &$producto) {
-                $producto['imagen_principal'] = versionarImagen($producto['imagen_principal'], $producto['fecha_sync']);
-                unset($producto['fecha_sync']);
-
-                // El precio de oferta (más alto, tachado) solo se muestra
-                // mientras la fecha de vencimiento sea hoy o futura.
-                $ofertaVigente = $producto['vencimiento_oferta'] !== null
-                    && $producto['vencimiento_oferta'] >= $hoy;
-
-                if (!$ofertaVigente) {
-                    $producto['precio_oferta'] = null;
-                }
-                unset($producto['vencimiento_oferta']);
-            }
-            unset($producto);
+            $productos = array_map('normalizarProducto', $stmt->fetchAll());
 
             echo json_encode([
                 'success'       => true,
@@ -249,6 +257,27 @@ try {
                 'pagina'        => $pagina,
                 'total_paginas' => (int) ceil($total / $porPagina),
             ]);
+            break;
+
+        case 'producto':
+            // Un solo producto, para abrir su modal desde un enlace compartido
+            // (catalogo.php?producto=ID).
+            $productoId = intval($_GET['id'] ?? 0);
+
+            $stmt = $pdo->prepare(
+                "SELECT " . COLUMNAS_PRODUCTO . "
+                 FROM productos_catalogo
+                 WHERE id_producto = :id AND stock <> 0 AND precio_venta_cordoba <> 0"
+            );
+            $stmt->execute([':id' => $productoId]);
+            $producto = $stmt->fetch();
+
+            if (!$producto) {
+                echo json_encode(['success' => false, 'message' => 'Producto no disponible.']);
+                break;
+            }
+
+            echo json_encode(['success' => true, 'producto' => normalizarProducto($producto)]);
             break;
 
         case 'imagenes':

@@ -104,17 +104,20 @@
         mostrarToastAgregado(producto.nombre);
     }
 
-    function mostrarToastAgregado(nombreProducto) {
+    function mostrarToast(texto) {
         const toastEl = document.getElementById('toastAgregado');
         if (!toastEl) return;
 
+        $('#toastAgregadoTexto').text(texto);
+        bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 2000 }).show();
+    }
+
+    function mostrarToastAgregado(nombreProducto) {
         let texto = nombreProducto || 'Producto';
         if (texto.length > 40) {
             texto = texto.substring(0, 40) + '…';
         }
-        $('#toastAgregadoTexto').text(texto + ' agregado al carrito');
-
-        bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 2000 }).show();
+        mostrarToast(texto + ' agregado al carrito');
     }
 
     function quitarDelCarrito(id) {
@@ -490,6 +493,13 @@
         const imagenPrincipal = datosProducto.imagen_principal || IMAGEN_PLACEHOLDER;
         renderMiniaturasProducto([imagenPrincipal]);
 
+        // Entrada propia en el historial (con ?producto=ID en la URL) para que
+        // el "atrás" del celular cierre el modal en vez de salir de la web.
+        const estadoHistorial = history.state || {};
+        if (estadoHistorial.capa !== 'modalProducto' || estadoHistorial.producto !== id) {
+            history.pushState({ capa: 'modalProducto', producto: id }, '', urlProducto(id));
+        }
+
         const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalProducto'));
         modal.show();
 
@@ -528,6 +538,147 @@
                 '" data-src="' + escapeHtml(url) + '" loading="lazy" ' +
                 'onerror="this.src=\'' + IMAGEN_PLACEHOLDER + '\'">';
         }).join(''));
+    }
+
+    // =====================================================================
+    //  HISTORIAL: botón "atrás" del celular y enlaces a un producto
+    // =====================================================================
+
+    // Ventanas que, al abrirse, agregan una entrada al historial. Así el
+    // "atrás" del celular las cierra en vez de salir del catálogo.
+    const CAPAS_CON_HISTORIAL = ['modalProducto', 'offcanvasFiltros', 'offcanvasCarrito'];
+
+    function urlCatalogo() {
+        return (typeof CATALOGO_URL !== 'undefined' && CATALOGO_URL)
+            ? CATALOGO_URL
+            : window.location.origin + window.location.pathname;
+    }
+
+    function urlProducto(id) {
+        const url = new URL(urlCatalogo(), window.location.href);
+        url.searchParams.set('producto', id);
+        // En local (o si CATALOGO_URL apunta a otro dominio) se queda en el
+        // mismo origen, porque pushState no permite cambiar de dominio.
+        return url.origin === window.location.origin
+            ? url.href
+            : window.location.pathname + url.search;
+    }
+
+    function cerrarCapa(id) {
+        const el = document.getElementById(id);
+        if (!el || !el.classList.contains('show')) return;
+        const instancia = el.classList.contains('modal')
+            ? bootstrap.Modal.getInstance(el)
+            : bootstrap.Offcanvas.getInstance(el);
+        if (instancia) instancia.hide();
+    }
+
+    function vincularCapasConHistorial() {
+        CAPAS_CON_HISTORIAL.forEach(function (id) {
+            const $el = $('#' + id);
+            const tipo = $el.hasClass('modal') ? 'modal' : 'offcanvas';
+
+            // El modal de producto hace su propio pushState (lleva el id en la URL)
+            if (tipo === 'offcanvas') {
+                $el.on('show.bs.offcanvas', function () {
+                    history.pushState({ capa: id }, '', window.location.href);
+                });
+            }
+
+            // Cerrado con la X / fondo / botón: se saca la entrada del
+            // historial. Si se cerró con "atrás", history.state ya no es esta
+            // capa y no hay nada que sacar.
+            $el.on('hide.bs.' + tipo, function () {
+                if (history.state && history.state.capa === id) {
+                    history.back();
+                }
+            });
+        });
+
+        window.addEventListener('popstate', function (e) {
+            const estadoHistorial = e.state || {};
+            CAPAS_CON_HISTORIAL.forEach(function (id) {
+                if (id !== estadoHistorial.capa) cerrarCapa(id);
+            });
+
+            // "Adelante" hacia un producto: se vuelve a abrir su modal
+            if (estadoHistorial.capa === 'modalProducto' && !$('#modalProducto').hasClass('show')) {
+                abrirProductoPorId(estadoHistorial.producto);
+            }
+        });
+    }
+
+    function abrirProductoPorId(id) {
+        $.ajax({
+            url: 'catalogo_data.php',
+            method: 'GET',
+            data: { accion: 'producto', id: id },
+            dataType: 'json',
+            success: function (data) {
+                if (data && data.success && data.producto) {
+                    abrirModalProducto(data.producto.id, data.producto);
+                } else {
+                    mostrarToast('Ese producto ya no está disponible');
+                }
+            }
+        });
+    }
+
+    /**
+     * Si se entró con catalogo.php?producto=ID (enlace compartido): la
+     * entrada inicial del historial queda como el catálogo sin parámetro y
+     * el modal se abre encima. Al cerrarlo (o con "atrás") se sigue en el
+     * catálogo normal.
+     */
+    function abrirProductoDesdeUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const id = parseInt(params.get('producto'), 10);
+        if (!id) return;
+
+        params.delete('producto');
+        const query = params.toString();
+        history.replaceState({}, '', window.location.pathname + (query ? '?' + query : '') + window.location.hash);
+
+        abrirProductoPorId(id);
+    }
+
+    function compartirProducto() {
+        const producto = estado.modalProductoActual;
+        if (!producto) return;
+
+        const enlace = new URL(urlCatalogo(), window.location.href);
+        enlace.searchParams.set('producto', producto.id);
+
+        // En el celular abre el menú nativo (WhatsApp, Messenger, etc.)
+        if (navigator.share) {
+            navigator.share({
+                title: producto.nombre,
+                text: producto.nombre + ' - ' + formatoCordoba(producto.precio_venta_cordoba),
+                url: enlace.href
+            }).catch(function () { /* el usuario canceló */ });
+            return;
+        }
+
+        copiarAlPortapapeles(enlace.href, function () {
+            mostrarToast('Enlace del producto copiado');
+        });
+    }
+
+    function copiarAlPortapapeles(texto, alCopiar) {
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(texto).then(alCopiar);
+            return;
+        }
+        const campo = document.createElement('textarea');
+        campo.value = texto;
+        campo.setAttribute('readonly', '');
+        campo.style.position = 'fixed';
+        campo.style.opacity = '0';
+        document.body.appendChild(campo);
+        campo.select();
+        document.execCommand('copy');
+        document.body.removeChild(campo);
+        alCopiar();
     }
 
     function cerrarOffcanvasFiltrosSiAbierto() {
@@ -692,6 +843,8 @@
         renderCarrito();
         cargarMeta();
         $('#inputNombreCliente').val(obtenerNombreCliente());
+        vincularCapasConHistorial();
+        abrirProductoDesdeUrl();
 
         // La búsqueda, marca/categoría/departamento y el rango de precio ya
         // NO disparan la consulta solos (era muy pesado para la db con cada
@@ -794,6 +947,9 @@
             agregarAlCarrito(estado.modalProductoActual);
         });
 
+        // Compartir el producto abierto en el modal
+        $('#btnCompartirProducto').on('click', compartirProducto);
+
         // Carrito: sumar / restar / quitar (delegado)
         $(document).on('click', '.btn-sumar', function () {
             cambiarCantidad(parseInt($(this).data('id'), 10), 1);
@@ -859,20 +1015,10 @@
         });
 
         $('#btnCopiarEnlace').on('click', function () {
-            const enlace = $('#inputEnlaceCompartir').val();
-            const mostrarCopiado = () => {
+            copiarAlPortapapeles($('#inputEnlaceCompartir').val(), function () {
                 $('#textoCopiado').stop(true).show();
                 setTimeout(() => $('#textoCopiado').fadeOut(), 2000);
-            };
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(enlace).then(mostrarCopiado);
-            } else {
-                const campo = document.getElementById('inputEnlaceCompartir');
-                campo.select();
-                campo.setSelectionRange(0, 99999);
-                document.execCommand('copy');
-                mostrarCopiado();
-            }
+            });
         });
     });
 

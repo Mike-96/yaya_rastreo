@@ -38,12 +38,43 @@ function assetVersionado($rutaRelativa)
         $ogTitulo = htmlspecialchars((EMPRESA_NOMBRE ?: 'Catálogo') . ' - Catálogo de Productos', ENT_QUOTES);
         $ogDescripcion = 'Mirá nuestro catálogo de productos y hacé tu pedido directo por WhatsApp.';
         $ogImagen = $baseUrlCatalogo . '/assets/img/logo.png';
+        $ogUrl = CATALOGO_URL;
+
+        // Enlace compartido de un producto (catalogo.php?producto=ID): el
+        // preview muestra la foto y el nombre de ese producto. El modal en sí
+        // lo abre catalogo.js; si la consulta falla, queda el preview genérico.
+        $productoCompartidoId = intval($_GET['producto'] ?? 0);
+        if ($productoCompartidoId > 0) {
+            require_once __DIR__ . '/conexion_catalogo.php';
+            $pdoCatalogo = (new ConexionCatalogo())->conectar();
+            if ($pdoCatalogo) {
+                try {
+                    $stmt = $pdoCatalogo->prepare(
+                        "SELECT nombre, marca, imagen_url FROM productos_catalogo
+                         WHERE id_producto = :id AND stock <> 0 AND precio_venta_cordoba <> 0"
+                    );
+                    $stmt->execute([':id' => $productoCompartidoId]);
+                    $productoCompartido = $stmt->fetch();
+                    if ($productoCompartido) {
+                        $ogTitulo = htmlspecialchars($productoCompartido['nombre'], ENT_QUOTES);
+                        $ogDescripcion = trim(($productoCompartido['marca'] ? $productoCompartido['marca'] . ' · ' : '') .
+                            'Disponible en ' . (EMPRESA_NOMBRE ?: 'nuestro catálogo') . '. Hacé tu pedido directo por WhatsApp.');
+                        if (!empty($productoCompartido['imagen_url'])) {
+                            $ogImagen = $productoCompartido['imagen_url'];
+                        }
+                        $ogUrl = CATALOGO_URL . '?producto=' . $productoCompartidoId;
+                    }
+                } catch (PDOException $e) {
+                    error_log('Error al armar preview del producto compartido: ' . $e->getMessage());
+                }
+            }
+        }
     ?>
     <meta property="og:type" content="website">
     <meta property="og:title" content="<?php echo $ogTitulo; ?>">
     <meta property="og:description" content="<?php echo htmlspecialchars($ogDescripcion, ENT_QUOTES); ?>">
     <meta property="og:image" content="<?php echo htmlspecialchars($ogImagen, ENT_QUOTES); ?>">
-    <meta property="og:url" content="<?php echo htmlspecialchars(CATALOGO_URL, ENT_QUOTES); ?>">
+    <meta property="og:url" content="<?php echo htmlspecialchars($ogUrl, ENT_QUOTES); ?>">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="<?php echo $ogTitulo; ?>">
     <meta name="twitter:description" content="<?php echo htmlspecialchars($ogDescripcion, ENT_QUOTES); ?>">
@@ -237,8 +268,10 @@ function assetVersionado($rutaRelativa)
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn-agregar-carrito" style="width:auto; padding:10px 24px;"
-                        id="btnAgregarDesdeModal">
+                    <button type="button" class="btn btn-outline-secondary btn-modal-accion" id="btnCompartirProducto">
+                        <i class="bi bi-share"></i> Compartir
+                    </button>
+                    <button type="button" class="btn-agregar-carrito btn-modal-accion" id="btnAgregarDesdeModal">
                         <i class="bi bi-cart-plus"></i> Agregar al carrito
                     </button>
                 </div>
