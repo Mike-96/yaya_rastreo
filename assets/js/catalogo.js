@@ -497,7 +497,7 @@
         // el "atrás" del celular cierre el modal en vez de salir de la web.
         const estadoHistorial = history.state || {};
         if (estadoHistorial.capa !== 'modalProducto' || estadoHistorial.producto !== id) {
-            history.pushState({ capa: 'modalProducto', producto: id }, '', urlProducto(id));
+            agregarEntradaHistorial({ capa: 'modalProducto', producto: id }, urlProducto(id));
         }
 
         const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalProducto'));
@@ -563,6 +563,37 @@
             ? url.href
             : window.location.pathname + url.search;
     }
+
+    // Entrada del historial que todavía no se pudo agregar (ver abajo).
+    let entradaHistorialPendiente = null;
+
+    /**
+     * pushState, pero respetando una regla de Chrome en Android: si la
+     * página agrega una entrada SIN que el usuario haya tocado nada (ej. el
+     * modal que se abre solo al entrar por un enlace compartido), el botón
+     * "atrás" se la salta y saca al usuario de la web. En ese caso se espera
+     * al primer toque para agregarla.
+     */
+    function agregarEntradaHistorial(estadoHistorial, url) {
+        const hayInteraccion = !navigator.userActivation || navigator.userActivation.isActive;
+        if (hayInteraccion) {
+            entradaHistorialPendiente = null;
+            history.pushState(estadoHistorial, '', url);
+        } else {
+            entradaHistorialPendiente = { estado: estadoHistorial, url: url };
+        }
+    }
+
+    // En fase de captura: corre antes que los handlers del modal (ej. la X),
+    // así el cierre encuentra la entrada ya agregada y la saca con back().
+    document.addEventListener('click', function () {
+        if (!entradaHistorialPendiente) return;
+        const pendiente = entradaHistorialPendiente;
+        entradaHistorialPendiente = null;
+        if (document.getElementById(pendiente.estado.capa)?.classList.contains('show')) {
+            history.pushState(pendiente.estado, '', pendiente.url);
+        }
+    }, true);
 
     function cerrarCapa(id) {
         const el = document.getElementById(id);
