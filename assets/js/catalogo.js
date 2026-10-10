@@ -566,22 +566,54 @@
 
     // Entrada del historial que todavía no se pudo agregar (ver abajo).
     let entradaHistorialPendiente = null;
+    // CloseWatcher activo para una capa abierta sin interacción (ver abajo).
+    let vigilanteCierre = null;
 
     /**
      * pushState, pero respetando una regla de Chrome en Android: si la
      * página agrega una entrada SIN que el usuario haya tocado nada (ej. el
      * modal que se abre solo al entrar por un enlace compartido), el botón
-     * "atrás" se la salta y saca al usuario de la web. En ese caso se espera
-     * al primer toque para agregarla.
+     * "atrás" se la salta y saca al usuario de la web.
+     *
+     * En ese caso se usa CloseWatcher (Chrome 126+), que sí permite capturar
+     * el "atrás" de Android sin interacción previa: cierra el modal y deja al
+     * cliente en el catálogo. Sin CloseWatcher, se espera al primer toque
+     * para agregar la entrada.
      */
     function agregarEntradaHistorial(estadoHistorial, url) {
         const hayInteraccion = !navigator.userActivation || navigator.userActivation.isActive;
         if (hayInteraccion) {
             entradaHistorialPendiente = null;
+            soltarVigilanteCierre();
             history.pushState(estadoHistorial, '', url);
-        } else {
+        } else if (!vigilarCierreSinHistorial(estadoHistorial.capa)) {
             entradaHistorialPendiente = { estado: estadoHistorial, url: url };
         }
+    }
+
+    function vigilarCierreSinHistorial(capa) {
+        if (!('CloseWatcher' in window)) return false;
+        soltarVigilanteCierre();
+        try {
+            const vigilante = new CloseWatcher();
+            vigilante.onclose = function () {
+                if (vigilanteCierre === vigilante) vigilanteCierre = null;
+                cerrarCapa(capa);
+            };
+            vigilanteCierre = vigilante;
+        } catch (e) {
+            return false;
+        }
+        // Cerrado con la X / fondo: el vigilante ya no hace falta
+        $('#' + capa).one('hidden.bs.modal hidden.bs.offcanvas', soltarVigilanteCierre);
+        return true;
+    }
+
+    function soltarVigilanteCierre() {
+        if (!vigilanteCierre) return;
+        const vigilante = vigilanteCierre;
+        vigilanteCierre = null;
+        vigilante.destroy();
     }
 
     // En fase de captura: corre antes que los handlers del modal (ej. la X),
