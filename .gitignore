@@ -1,2 +1,5 @@
 # Credenciales locales, no subir al repo
 config.php
+
+# Config de SFTP con credenciales del servidor
+.vscode/sftp.json
